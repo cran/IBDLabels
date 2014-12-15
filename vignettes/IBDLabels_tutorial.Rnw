@@ -1,0 +1,215 @@
+%\VignetteIndexEntry{IBDhaploRtools tutorial}
+\documentclass[12pt]{article} 
+
+\usepackage{Sweave}
+\usepackage[left=3cm,top=3cm,right=3cm]{geometry}
+
+\SweaveOpts{keep.source=TRUE}
+
+\title{ IBDLabels Package }
+\author{ Fiona Grimson <fgrimson@uw.edu> } 
+
+\begin{document}
+\maketitle
+
+This package is intended for reference in converting between different
+IBD labelling schemes. All conversions are to or from the ``label'' as
+used by MORGAN programs. Conversions with the vector representation of
+the state, lexicographic indexing, and jacquard indexing are included.
+
+The installation of the package and the usage of its main functions is
+described here.
+
+\section{ Installation } 
+
+To install this package, open R and type 
+<<install,eval=FALSE,echo=TRUE>>=
+install.packages( "IBDLabels", repos = "http://R-Forge.R-project.org")
+@ 
+
+To open the package, type 
+<<library>>=
+library("IBDLabels")
+@ 
+
+To open this tutorial within R, type 
+<<tutorial,eval=FALSE,echo=TRUE>>=
+vignette("IBDLabels_tutorial") 
+@ 
+
+List all the functions available with the command
+<<list>>=
+## list everything in the package
+ls( "package:IBDLabels", all=TRUE)
+## list all functions and their arguments
+lsf.str("package:IBDLabels")
+@ 
+\section{ Label/Vector }
+
+The vector representation of the IBD state is a complete and
+unambiguous description of the IBD state. There is one vector element
+per gamete. The first gamete is always numbered one, with subsequent
+gametes being given the same number if they are IBD with a previous
+gamete, or a new number if they are not. For example in (1,2,2,3), the
+second and third gametes are IBD.
+
+Functions are included for a lookup table for all labels and vectors,
+\verb|allVec|, or to do individual conversions between vector and
+label and vice versa, \verb|vec2label| and \verb|label2vec|. The
+function \verb|maxlabel| gives the maximum label for a certain number
+of gametes. \emph{Note that the minimum label is always zero, and while all
+valid IBD states produce a unique label not all labels correspond to a
+valid IBD state.} In this package, invalid labels will be converted to NA.
+
+When \verb|vec2label| is called, the input vector is always converted to a
+valid IBD state vector by calling the function \verb|fgl2vec|. This
+ensures that valid, invertible labels are always produced. The
+function can be called directly on fgl vectors to find the
+corresponding IBD label.
+
+<<vec>>=
+## Vectors for all labels, note the invalid IBD state produced from 
+## label 2 has NA.
+allVec( ngam = 4 ) 
+       
+## Convert vector to label, the vectors are always renumbered with fgl2vec.
+vec2label( c(1,1,1,3))
+vec2label( c(1,1,1,2))
+
+## Convert label to vector
+label2vec( 1, ngam = 4 ) ## Coverts to valid vector
+label2vec( 2, ngam = 4 ) ## Converts to invalid vector
+
+## renumbering
+fgl2vec( c( 1,1,1,3) )
+fgl2vec( c(5,1,5,6) ) 
+
+## maximum label for given number of gametes. 
+maxlabel( ngam = 4 ) 
+maxlabel( ngam = 5 )
+maxlabel( ngam = 6 )
+@ 
+\section{ Label/Lexicographic }
+
+Lexicographic ordering of states is the same as the label order, but
+with invalid labels removed. For example, in the four gamete case the
+label 2 would produce (1,1,1,3) which is not a valid IBD
+state. \emph{Note that lexicographic indexing starts from 1, and
+  labels start from 0.}
+
+The functions \verb|label2lex| and \verb|lex2label| do conversions
+from label to lexicographic and vice versa.  The functions
+\verb|allLex| creates a reference vector of all lexicographic and
+label conversions and for doing individual conversions.
+
+<<lex>>=
+
+## Vector of all lexicograghic states with labels ( names of elements )
+## labels are printed on the top line
+allLex( ngam = 4 )
+
+## Convert lex to label
+lex2label( lex = 5 , ngam = 4 )
+
+## Convert label to lex
+label2lex( label = 3, ngam = 4 )
+
+## Invalid labels do not convert to lex
+label2lex( label = 2, ngam = 4)
+
+@ 
+
+\section{ Label/Jacquard } 
+Jacquard indexing only applies to 4-gamete IBD states, and can be
+phased (15 states) or unphased (9 states).  \emph{Note that jacquard
+  indexing starts from 1, and labels start from 0.}
+
+<<jaq>>=
+
+## list all jacquard states
+allJaq()
+
+## Convert label to jacquard
+label2jaq( 3, phased = TRUE )
+label2jaq( 3, phased = FALSE )
+
+## Convert jacquard to label
+jaq2label( 9, phased = TRUE )
+jaq2label( 9, phased = FALSE )
+@ 
+
+
+\section{All conversions}
+
+We can create a lookup table of all the conversions with the allStates
+command.
+
+<<>>=
+
+## Lookup table of all states. Always puts NA for invalid.
+allStates( ngam = 4 )
+
+@ 
+
+As a visual reference, I have included visual representations of the
+IBD states in Table 1 (jacquard ordering) and Table 2
+(lexicographic/label ordering.
+
+\begin{table}[p]
+  \centering
+  \begin{tabular}{|rcccccc|}
+    \hline
+&  Label & Lex  &15-state & 9-state & State & No.IBD \\
+&        &      &Jacquard & Jacquard & Vector &        \\
+
+\hline
+\includegraphics[width=0.05\textwidth]{states/s1.png}&0&1&1 & 1 & 1111 & 2 \\
+\includegraphics[width=0.05\textwidth]{states/s2.png}&4&4&2 & 2 & 1122 & 0 \\
+\includegraphics[width=0.05\textwidth]{states/s3.png}&1&2&3 & 3 & 1112 & 1 \\
+\includegraphics[width=0.05\textwidth]{states/s4.png}&3&3&4 & 3 & 1121 & 1 \\
+\includegraphics[width=0.05\textwidth]{states/s5.png}&5&5&5 & 4 & 1123 & 0 \\
+\includegraphics[width=0.05\textwidth]{states/s6.png}&6&6&6 & 5 & 1211 & 1 \\
+\includegraphics[width=0.05\textwidth]{states/s7.png}&10&10&7 & 5 & 1222 & 1 \\
+\includegraphics[width=0.05\textwidth]{states/s8.png}&14&14&8 & 6 & 1233 & 0 \\
+\includegraphics[width=0.05\textwidth]{states/s9.png}&7&7&9 & 7 & 1212 & 2 \\
+\includegraphics[width=0.05\textwidth]{states/s10.png}&9&9&10 & 7 & 1221 & 2 \\
+\includegraphics[width=0.05\textwidth]{states/s11.png}&8&8&11 & 8 & 1213 & 1 \\
+\includegraphics[width=0.05\textwidth]{states/s12.png}&12&12&12 & 8 & 1231 & 1 \\
+\includegraphics[width=0.05\textwidth]{states/s13.png}&11&11&13 & 8 & 1223 & 1 \\
+\includegraphics[width=0.05\textwidth]{states/s14.png}&13&13&14 & 8 & 1232 & 1 \\
+\includegraphics[width=0.05\textwidth]{states/s15.png}&15&15&15 & 9 & 1234 & 0 \\
+ \hline   
+  \end{tabular}
+  \caption{IBD state equivalences, ordered by Jacquard}
+  \label{tab:ibdequiv}
+\end{table}
+\begin{table}[p]
+  \centering
+  \begin{tabular}{|rcccccc|}
+    \hline
+&  Label & Lex &15-state & 9-state & State & No.IBD \\
+&        &     &Jacquard & Jacquard & Vector &        \\
+
+\hline
+\includegraphics[width=0.05\textwidth]{states/s1.png}&0&1&1 & 1 & 1111 & 2 \\
+\includegraphics[width=0.05\textwidth]{states/s3.png}&1&2&3 & 3 & 1112 & 1 \\
+\includegraphics[width=0.05\textwidth]{states/s4.png}&3&3&4 & 3 & 1121 & 1 \\
+\includegraphics[width=0.05\textwidth]{states/s2.png}&4&4&2 & 2 & 1122 & 0 \\
+\includegraphics[width=0.05\textwidth]{states/s5.png}&5&5&5 & 4 & 1123 & 0 \\
+\includegraphics[width=0.05\textwidth]{states/s6.png}&6&6&6 & 5 & 1211 & 1 \\
+\includegraphics[width=0.05\textwidth]{states/s9.png}&7&7&9 & 7 & 1212 & 2 \\
+\includegraphics[width=0.05\textwidth]{states/s11.png}&8&8&11 & 8 & 1213 & 1 \\
+\includegraphics[width=0.05\textwidth]{states/s10.png}&9&9&10 & 7 & 1221 & 2 \\
+\includegraphics[width=0.05\textwidth]{states/s7.png}&10&10&7 & 5 & 1222 & 1 \\
+\includegraphics[width=0.05\textwidth]{states/s13.png}&11&11&13 & 8 & 1223 & 1 \\
+\includegraphics[width=0.05\textwidth]{states/s12.png}&12&12&12 & 8 & 1231 & 1 \\
+\includegraphics[width=0.05\textwidth]{states/s14.png}&13&13&14 & 8 & 1232 & 1 \\
+\includegraphics[width=0.05\textwidth]{states/s8.png}&14&14&8 & 6 & 1233 & 0 \\
+\includegraphics[width=0.05\textwidth]{states/s15.png}&15&15&15 & 9 & 1234 & 0 \\
+ \hline   
+  \end{tabular}
+  \caption{IBD state equivalences, ordered by Label}
+  \label{tab:ibdequiv}
+\end{table}
+
+\end{document}
